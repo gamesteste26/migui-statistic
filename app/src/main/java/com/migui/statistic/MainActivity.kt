@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
@@ -63,10 +64,17 @@ fun MiguiApp() {
 
     LaunchedEffect(Unit) {
         loading = true
-        val result = withContext(Dispatchers.IO) { loadPremierLeagueMatches() }
-        matches = result.first
-        error = result.second
-        loading = false
+        while (true) {
+            val result = withContext(Dispatchers.IO) { loadPremierLeagueMatches() }
+            if (result.second == null) {
+                matches = result.first
+                error = null
+            } else {
+                error = result.second
+            }
+            loading = false
+            delay(30_000L)
+        }
     }
 
     val visibleMatches = when (selected) {
@@ -150,6 +158,9 @@ fun MiguiApp() {
                         }
                     }
                     Spacer(Modifier.height(16.dp))
+                    Text("ATUALIZAÇÃO AUTOMÁTICA A CADA 30 SEGUNDOS",
+                        color = Muted, fontSize = 9.sp, letterSpacing = 0.6.sp)
+                    Spacer(Modifier.height(8.dp))
                     if (loading) {
                         LinearProgressIndicator(
                             modifier = Modifier.fillMaxWidth(),
